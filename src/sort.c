@@ -33,6 +33,12 @@
 #include "pqsort.h" /* Partial qsort for SORT+LIMIT */
 #include <math.h> /* isnan() */
 
+/* tim sort implementation */
+#define SORT_NAME redis
+#define SORT_TYPE redisSortObject
+#define SORT_CMP(x, y) sortCompare(&x, &y)
+#include "sort.h"
+
 zskiplistNode* zslGetElementByRank(zskiplist *zsl, unsigned long rank);
 
 redisSortOperation *createSortOperation(int type, robj *pattern) {
@@ -446,7 +452,7 @@ void sortCommand(redisClient *c) {
         if (sortby && (start != 0 || end != vectorlen-1))
             pqsort(vector,vectorlen,sizeof(redisSortObject),sortCompare, start,end);
         else
-            qsort(vector,vectorlen,sizeof(redisSortObject),sortCompare);
+            redis_tim_sort(vector, vectorlen);
     }
 
     /* Send command output to the output buffer, performing the specified
